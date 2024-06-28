@@ -1,0 +1,104 @@
+version: '3.8'
+services:
+  postgres:
+    image: debezium/example-postgres:2.7
+    container_name: postgres
+    environment:
+      POSTGRES_USER: develop
+      POSTGRES_PASSWORD: develop
+      POSTGRES_DB: db_develop
+    restart: always
+    ports:
+      - 5432:5432
+
+  backend-datasets:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: backend-datasets
+    ports:
+      - "8000:8000"
+    depends_on:
+      - postgres
+    environment:
+      DB_ENGINE: postgresql
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_DATABASE: db_develop
+      DB_USERNAME: develop
+      DB_PASSWORD: develop
+    restart: always
+
+  zookeeper:
+    image: confluentinc/cp-zookeeper:latest
+    container_name: zookeeper
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    ports:
+      - 2181:2181
+    restart: always
+
+  kafka:
+    image: confluentinc/cp-kafka:latest
+    container_name: kafka
+    depends_on:
+      - zookeeper
+    ports:
+      - 9092:9092
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_CREATE_TOPICS: "produtos-persistidos:1:1"
+    restart: always
+
+  debezium:
+    image: debezium/connect:1.9
+    ports:
+      - 8083:8083
+    environment:
+      CONFIG_STORAGE_TOPIC: my_connect_configs
+      OFFSET_STORAGE_TOPIC: my_connect_offsets
+      STATUS_STORAGE_TOPIC: my_connect_statuses
+      BOOTSTRAP_SERVERS: kafka:29092
+    links:
+      - zookeeper
+      - postgres
+    depends_on:
+      - kafka
+      - zookeeper
+      - postgres
+
+  kafdrop:
+    image: obsidiandynamics/kafdrop:latest
+    depends_on:
+      - kafka
+    ports:
+      - 19000:9000
+    environment:
+      KAFKA_BROKERCONNECT: kafka:29092
+
+# POST http://localhost:8083/connectors
+
+# {
+#   "name": "postgres-connector",
+#   "config": {
+#     "connector.class": "io.debezium.connector.postgresql.PostgresConnector",
+#     "database.hostname": "postgres",
+#     "database.port": "5432",
+#     "database.user": "develop",
+#     "database.password": "develop",
+#     "database.dbname": "db_develop",
+#     "database.server.name": "dbserver1",
+#     "table.include.list": "public.products",
+#     "transforms": "route",
+#     "transforms.route.type": "org.apache.kafka.connect.transforms.RegexRouter",
+#     "transforms.route.regex": "dbserver1.public.products",
+#     "transforms.route.replacement": "produtos-persistidos"
+#   }
+# }
+
