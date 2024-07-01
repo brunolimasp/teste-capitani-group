@@ -2,7 +2,7 @@
 
 
 
-O projeto da Teste - Capitani Group foi construído com FastAPI devido à sua facilidade e agilidade na criação de APIs, juntamente com sua documentação automática utilizando recursos da OpenAPI como Swagger e Redoc. Para armazenar os dados, foi utilizado Postgres devido à sua estabilidade, solidez e ampla adoção no mercado. Além disso, para melhorar a capacidade de monitoramento e persistência de eventos relacionados aos dados do Postgres, integrei o Kafka. Utilizei o Kafka para persistir dados em tópicos e adicionei o Kafdrop para facilitar a visualização e monitoramento desses tópicos.
+O projeto de teste Capitani Group foi construído com FastAPI devido à sua facilidade e agilidade na criação de APIs, juntamente com sua documentação automática utilizando recursos da OpenAPI como Swagger e Redoc. Para armazenar os dados, foi utilizado Postgres devido à sua estabilidade, solidez e ampla adoção no mercado. Além disso, para melhorar a capacidade de monitoramento e persistência de eventos relacionados aos dados do Postgres, integrei o Kafka. Utilizei o Kafka para persistir dados em tópicos e adicionei o Kafdrop para facilitar a visualização e monitoramento desses tópicos.
 
 
 ## Instruções e Requisitos
